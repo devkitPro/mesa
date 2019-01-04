@@ -1216,7 +1216,7 @@ _shared_llvm = get_option('shared-llvm')
 _llvm = get_option('llvm')
 dep_llvm = null_dep
 with_llvm = false
-if _llvm != 'false'
+if _llvm != 'false' and not ['horizon'].contains(host_machine.system())
   dep_llvm = dependency(
     'llvm',
     version : _llvm_version,
