@@ -70,6 +70,7 @@ static const struct {
    { _EGL_PLATFORM_ANDROID, "android" },
    { _EGL_PLATFORM_HAIKU, "haiku" },
    { _EGL_PLATFORM_SURFACELESS, "surfaceless" },
+   { _EGL_PLATFORM_SWITCH, "switch" },
 };
 
 
@@ -135,6 +136,10 @@ _eglNativePlatformDetectNativeDisplay(void *nativeDisplay)
 
 #ifdef HAVE_HAIKU_PLATFORM
       return _EGL_PLATFORM_HAIKU;
+#endif
+
+#ifdef HAVE_SWITCH_PLATFORM
+      return _EGL_PLATFORM_SWITCH;
 #endif
    }
 

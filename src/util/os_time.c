@@ -28,7 +28,7 @@
 /**
  * @file
  * OS independent time-manipulation functions.
- * 
+ *
  * @author Jose Fonseca <jfonseca@vmware.com>
  */
 
@@ -38,8 +38,9 @@
 #include "gallium/include/pipe/p_config.h"
 
 #include "util/u_atomic.h"
+#include "c11/threads.h"
 
-#if defined(PIPE_OS_UNIX)
+#if defined(PIPE_OS_UNIX) || defined(PIPE_OS_SWITCH)
 #  include <unistd.h> /* usleep */
 #  include <time.h> /* timeval */
 #  include <sys/time.h> /* timeval */
@@ -49,6 +50,10 @@
 #  include <windows.h>
 #else
 #  error Unsupported OS
+#endif
+
+#if defined(PIPE_OS_SWITCH)
+#  include <switch/kernel/svc.h>
 #endif
 
 
@@ -61,7 +66,7 @@ os_time_get_nano(void)
    clock_gettime(CLOCK_MONOTONIC, &tv);
    return tv.tv_nsec + tv.tv_sec*INT64_C(1000000000);
 
-#elif defined(PIPE_OS_UNIX)
+#elif defined(PIPE_OS_UNIX) || defined(PIPE_OS_SWITCH)
 
    struct timeval tv;
    gettimeofday(&tv, NULL);
@@ -110,6 +115,8 @@ os_time_sleep(int64_t usecs)
    if (dwMilliseconds) {
       Sleep(dwMilliseconds);
    }
+#elif defined(PIPE_OS_SWITCH)
+   svcSleepThread((u64)usecs * 1000);
 #else
 #  error Unsupported OS
 #endif
