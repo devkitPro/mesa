@@ -37,6 +37,32 @@
 
 #include "c99_compat.h" /* for `inline` */
 
+#ifdef _ISOC11_SOURCE
+#include <threads.h>
+#include <limits.h>
+
+/*-------------------- 7.25.7 Time functions --------------------*/
+// 7.25.6.1
+#ifndef HAVE_TIMESPEC_GET
+#include <sys/time.h>
+
+static inline int
+timespec_get(struct timespec *ts, int base)
+{
+    if (!ts) return 0;
+    if (base == TIME_UTC) {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        ts->tv_sec = tv.tv_sec;
+        ts->tv_nsec = tv.tv_usec * 1000;
+        return base;
+    }
+    return 0;
+}
+#endif
+
+#else
+
 /*---------------------------- types ----------------------------*/
 typedef void (*tss_dtor_t)(void*);
 typedef int (*thrd_start_t)(void*);
@@ -68,6 +94,6 @@ enum {
 #error Not supported on this platform.
 #endif
 
-
+#endif
 
 #endif /* EMULATED_THREADS_H_INCLUDED_ */

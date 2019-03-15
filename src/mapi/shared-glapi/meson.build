@@ -36,7 +36,7 @@ shared_glapi_mapi_tmp_h = custom_target(
   capture : true,
 )
 
-libglapi = shared_library(
+libglapi = library(
   'glapi',
   [files_mapi_glapi, files_mapi_util, shared_glapi_mapi_tmp_h],
   c_args : [
@@ -48,6 +48,15 @@ libglapi = shared_library(
   dependencies : [dep_thread, dep_selinux],
   version : '0.0.0',
   install : true,
+)
+
+pkg.generate(
+  name : 'glapi',
+  filebase : 'glapi',
+  description : 'Mesa OpenGL shared library',
+  version : meson.project_version(),
+  libraries : libglapi,
+  libraries_private : gl_priv_libs,
 )
 
 if with_any_opengl and with_tests

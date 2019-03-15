@@ -55,6 +55,8 @@
 #  include <kernel/OS.h>
 #elif defined(PIPE_OS_WINDOWS)
 #  include <windows.h>
+#elif defined(PIPE_OS_SWITCH)
+#  include <switch.h>
 #else
 #error unexpected platform in os_sysinfo.c
 #endif
@@ -100,6 +102,9 @@ os_log_message(const char *message)
       fflush(fout);
    }
 #else /* !PIPE_SUBSYSTEM_WINDOWS */
+#if defined(PIPE_OS_SWITCH)
+      svcOutputDebugString(message, strlen(message) + 1);
+#endif
    fflush(stdout);
    fputs(message, fout);
    fflush(fout);
@@ -169,6 +174,8 @@ os_get_total_physical_memory(uint64_t *size)
    ret = GlobalMemoryStatusEx(&status);
    *size = status.ullTotalPhys;
    return (ret == TRUE);
+#elif defined(PIPE_OS_SWITCH)
+   return R_SUCCEEDED(svcGetInfo(size, 6, CUR_PROCESS_HANDLE, 0));
 #else
 #error unexpected platform in os_sysinfo.c
    return false;
