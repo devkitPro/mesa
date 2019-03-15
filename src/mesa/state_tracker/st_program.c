@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2007 VMware, Inc.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,11 +10,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -22,7 +22,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  **************************************************************************/
  /*
   * Authors:
@@ -398,6 +398,8 @@ st_translate_prog_to_nir(struct st_context *st, struct gl_program *prog,
    return nir;
 }
 
+#endif
+
 void
 st_prepare_vertex_program(struct st_program *stp)
 {
@@ -507,6 +509,7 @@ st_translate_vertex_program(struct st_context *st,
       if (stp->Base.Parameters->NumParameters)
          stp->affected_states |= ST_NEW_VS_CONSTANTS;
 
+#ifndef __SWITCH__
       /* Translate to NIR if preferred. */
       if (st->pipe->screen->get_shader_param(st->pipe->screen,
                                              PIPE_SHADER_VERTEX,
@@ -530,6 +533,7 @@ st_translate_vertex_program(struct st_context *st,
          if (draw_has_llvm())
             return true;
       }
+#endif
    }
 
    /* Get semantic names and indices. */
@@ -623,6 +627,8 @@ st_translate_vertex_program(struct st_context *st,
    return stp->state.tokens != NULL;
 }
 
+#ifndef __SWITCH__
+
 static struct nir_shader *
 get_nir_shader(struct st_context *st, struct st_program *stp)
 {
@@ -646,6 +652,8 @@ get_nir_shader(struct st_context *st, struct st_program *stp)
    return nir_deserialize(NULL, options, &blob_reader);
 }
 
+#endif
+
 static const gl_state_index16 depth_range_state[STATE_LENGTH] =
    { STATE_DEPTH_RANGE };
 
@@ -667,6 +675,7 @@ st_create_vp_variant(struct st_context *st,
 
    state.stream_output = stvp->state.stream_output;
 
+#ifndef __SWITCH__
    if (stvp->state.type == PIPE_SHADER_IR_NIR &&
        (!key->is_draw_shader || draw_has_llvm())) {
       bool finalize = false;
@@ -734,6 +743,7 @@ st_create_vp_variant(struct st_context *st,
 
       return vpv;
    }
+#endif
 
    state.type = PIPE_SHADER_IR_TGSI;
    state.tokens = tgsi_dup_tokens(stvp->state.tokens);
@@ -859,6 +869,7 @@ st_translate_fragment_program(struct st_context *st,
                                      ST_NEW_FS_SAMPLERS;
       }
 
+#ifndef __SWITCH__
       /* Translate to NIR. */
       if (!stfp->ati_fs &&
           st->pipe->screen->get_shader_param(st->pipe->screen,
@@ -877,6 +888,7 @@ st_translate_fragment_program(struct st_context *st,
          stfp->Base.nir = nir;
          return true;
       }
+#endif
    }
 
    ubyte outputMapping[2 * FRAG_RESULT_MAX];
@@ -1226,6 +1238,7 @@ st_create_fp_variant(struct st_context *st,
    if (!variant)
       return NULL;
 
+#ifndef __SWITCH__
    if (stfp->state.type == PIPE_SHADER_IR_NIR) {
       bool finalize = false;
 
@@ -1362,6 +1375,7 @@ st_create_fp_variant(struct st_context *st,
 
       return variant;
    }
+#endif
 
    state.tokens = stfp->state.tokens;
 
@@ -1758,6 +1772,7 @@ st_get_common_variant(struct st_context *st,
       v = (struct st_variant*)CALLOC_STRUCT(st_common_variant);
       if (v) {
 	 if (prog->state.type == PIPE_SHADER_IR_NIR) {
+#ifndef __SWITCH__
             bool finalize = false;
 
 	    state.type = PIPE_SHADER_IR_NIR;
@@ -1777,6 +1792,7 @@ st_get_common_variant(struct st_context *st,
 
             if (ST_DEBUG & DEBUG_PRINT_IR)
                nir_print_shader(state.ir.nir, stderr);
+#endif
          } else {
             if (key->lower_depth_clamp) {
                struct gl_program_parameter_list *params = prog->Base.Parameters;
@@ -1816,9 +1832,11 @@ st_get_common_variant(struct st_context *st,
             cs.ir_type = state.type;
             cs.req_local_mem = prog->Base.info.cs.shared_size;
 
+#ifndef __SWITCH__
             if (state.type == PIPE_SHADER_IR_NIR)
                cs.prog = state.ir.nir;
             else
+#endif
                cs.prog = state.tokens;
 
             v->driver_shader = pipe->create_compute_state(pipe, &cs);
@@ -1999,6 +2017,8 @@ st_precompile_shader_variant(struct st_context *st,
    }
 }
 
+#ifndef __SWITCH__
+
 void
 st_serialize_nir(struct st_program *stp)
 {
@@ -2013,6 +2033,8 @@ st_serialize_nir(struct st_program *stp)
    }
 }
 
+#endif
+
 void
 st_finalize_program(struct st_context *st, struct gl_program *prog)
 {
@@ -2023,6 +2045,7 @@ st_finalize_program(struct st_context *st, struct gl_program *prog)
          st->dirty |= ((struct st_program *)prog)->affected_states;
    }
 
+#ifndef __SWITCH__
    if (prog->nir) {
       nir_sweep(prog->nir);
 
@@ -2032,6 +2055,7 @@ st_finalize_program(struct st_context *st, struct gl_program *prog)
        */
       st_serialize_nir(st_program(prog));
    }
+#endif
 
    /* Create Gallium shaders now instead of on demand. */
    if (ST_DEBUG & DEBUG_PRECOMPILE ||

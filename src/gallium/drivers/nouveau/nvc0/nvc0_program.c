@@ -587,9 +587,11 @@ nvc0_program_translate(struct nvc0_program *prog, uint16_t chipset,
    case PIPE_SHADER_IR_TGSI:
       info->bin.source = (void *)prog->pipe.tokens;
       break;
+#ifndef __SWITCH__
    case PIPE_SHADER_IR_NIR:
       info->bin.source = (void *)nir_shader_clone(NULL, prog->pipe.ir.nir);
       break;
+#endif
    default:
       assert(!"unsupported IR!");
       free(info);
@@ -722,8 +724,10 @@ nvc0_program_translate(struct nvc0_program *prog, uint16_t chipset,
 #endif
 
 out:
+#ifndef __SWITCH__
    if (info->bin.sourceRep == PIPE_SHADER_IR_NIR)
       ralloc_free((void *)info->bin.source);
+#endif
    FREE(info);
    return !ret;
 }

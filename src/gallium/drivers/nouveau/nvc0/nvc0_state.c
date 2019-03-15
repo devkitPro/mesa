@@ -605,9 +605,11 @@ nvc0_sp_state_create(struct pipe_context *pipe,
    case PIPE_SHADER_IR_TGSI:
       prog->pipe.tokens = tgsi_dup_tokens(cso->tokens);
       break;
+#ifndef __SWITCH__
    case PIPE_SHADER_IR_NIR:
       prog->pipe.ir.nir = cso->ir.nir;
       break;
+#endif
    default:
       assert(!"unsupported IR!");
       free(prog);
@@ -633,8 +635,10 @@ nvc0_sp_state_delete(struct pipe_context *pipe, void *hwcso)
 
    if (prog->pipe.type == PIPE_SHADER_IR_TGSI)
       FREE((void *)prog->pipe.tokens);
+#ifndef __SWITCH__
    else if (prog->pipe.type == PIPE_SHADER_IR_NIR)
       ralloc_free(prog->pipe.ir.nir);
+#endif
    FREE(prog);
 }
 
@@ -738,6 +742,7 @@ nvc0_cp_state_create(struct pipe_context *pipe,
    case PIPE_SHADER_IR_TGSI:
       prog->pipe.tokens = tgsi_dup_tokens((const struct tgsi_token *)cso->prog);
       break;
+#ifndef __SWITCH__
    case PIPE_SHADER_IR_NIR:
       prog->pipe.ir.nir = (nir_shader *)cso->prog;
       break;
@@ -750,6 +755,7 @@ nvc0_cp_state_create(struct pipe_context *pipe,
       prog->pipe.type = PIPE_SHADER_IR_NIR;
       break;
    }
+#endif
    default:
       assert(!"unsupported IR!");
       free(prog);

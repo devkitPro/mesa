@@ -41,7 +41,7 @@ if with_platform_windows
   _glapi_c_args += ['-D_GLAPI_DLL_EXPORTS']
 endif
 
-libglapi = shared_library(
+libglapi = library(
   'glapi',
   [files_mapi_glapi, files_mapi_util, shared_glapi_mapi_tmp_h],
   c_args : [
@@ -59,6 +59,15 @@ libglapi = shared_library(
   version : '0.0.0',
   name_prefix : 'lib',
   install : true,
+)
+
+pkg.generate(
+  name : 'glapi',
+  filebase : 'glapi',
+  description : 'Mesa OpenGL shared library',
+  version : meson.project_version(),
+  libraries : libglapi,
+  libraries_private : gl_priv_libs,
 )
 
 if with_any_opengl and with_tests

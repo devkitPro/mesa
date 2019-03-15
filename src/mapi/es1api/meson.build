@@ -32,7 +32,7 @@ if with_platform_windows
   _es1_c_args += ['-D_GDI32_', '-DBUILD_GL32']
 endif
 
-libglesv1_cm = shared_library(
+libglesv1_cm = library(
   'GLESv1_CM' + get_option('gles-lib-suffix'),
   ['../entry.c', es1_glapi_mapi_tmp_h],
   c_args : [

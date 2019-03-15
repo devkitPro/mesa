@@ -1014,7 +1014,7 @@ static void strcat_without_spaces(char *dst, const char *src)
 }
 
 
-#ifdef PIPE_OS_WINDOWS
+#if defined(PIPE_OS_WINDOWS) || defined(PIPE_OS_SWITCH)
 #define W_OK 0
 static int
 access(const char *pathname, int mode)
@@ -1022,6 +1022,9 @@ access(const char *pathname, int mode)
    /* no-op */
    return 0;
 }
+#endif
+
+#if defined(PIPE_OS_WINDOWS)
 
 #define PATH_SEP "\\"
 

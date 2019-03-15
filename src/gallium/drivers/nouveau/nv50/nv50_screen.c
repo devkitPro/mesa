@@ -21,7 +21,6 @@
  */
 
 #include <errno.h>
-#include <xf86drm.h>
 #include <nouveau_drm.h>
 #include "util/format/u_format.h"
 #include "util/format/u_format_s3tc.h"

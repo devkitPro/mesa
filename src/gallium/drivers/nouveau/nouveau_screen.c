@@ -160,9 +160,11 @@ nouveau_disk_cache_create(struct nouveau_screen *screen)
    _mesa_sha1_final(&ctx, sha1);
    disk_cache_format_hex_id(cache_id, sha1, 20 * 2);
 
+#ifndef __SWITCH__
    if (screen->prefer_nir)
       driver_flags |= NOUVEAU_SHADER_CACHE_FLAGS_IR_NIR;
    else
+#endif
       driver_flags |= NOUVEAU_SHADER_CACHE_FLAGS_IR_TGSI;
 
    screen->disk_shader_cache =
@@ -185,7 +187,11 @@ nouveau_screen_init(struct nouveau_screen *screen, struct nouveau_device *dev)
    if (nv_dbg)
       nouveau_mesa_debug = atoi(nv_dbg);
 
+#ifndef __SWITCH__
    screen->prefer_nir = debug_get_bool_option("NV50_PROG_USE_NIR", false);
+#else
+   screen->prefer_nir = false;
+#endif
    screen->force_enable_cl = debug_get_bool_option("NOUVEAU_ENABLE_CL", false);
    if (screen->force_enable_cl)
       glsl_type_singleton_init_or_ref();
@@ -285,8 +291,6 @@ nouveau_screen_init(struct nouveau_screen *screen, struct nouveau_device *dev)
 void
 nouveau_screen_fini(struct nouveau_screen *screen)
 {
-   int fd = screen->drm->fd;
-
    if (screen->force_enable_cl)
       glsl_type_singleton_decref();
 
@@ -300,7 +304,6 @@ nouveau_screen_fini(struct nouveau_screen *screen)
 
    nouveau_device_del(&screen->device);
    nouveau_drm_del(&screen->drm);
-   close(fd);
 
    disk_cache_destroy(screen->disk_shader_cache);
 }

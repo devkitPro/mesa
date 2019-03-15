@@ -146,7 +146,7 @@ if dri_drivers.contains('auto')
       error('Unknown architecture @0@. Please pass -Ddri-drivers to set driver options. Patches gladly accepted to fix this.'.format(
             host_machine.cpu_family()))
     endif
-  elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
+  elif ['darwin', 'windows', 'cygwin', 'haiku', 'horizon'].contains(host_machine.system())
     # only swrast would make sense here, but gallium swrast is a much better default
     dri_drivers = []
   else
@@ -182,6 +182,8 @@ if gallium_drivers.contains('auto')
       error('Unknown architecture @0@. Please pass -Dgallium-drivers to set driver options. Patches gladly accepted to fix this.'.format(
             host_machine.cpu_family()))
     endif
+  elif ['horizon'].contains(host_machine.system())
+    _drivers = ['nouveau']
   elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
     gallium_drivers = ['swrast']
   else
@@ -234,7 +236,7 @@ if _vulkan_drivers.contains('auto')
       error('Unknown architecture @0@. Please pass -Dvulkan-drivers to set driver options. Patches gladly accepted to fix this.'.format(
             host_machine.cpu_family()))
     endif
-  elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
+  elif ['darwin', 'windows', 'cygwin', 'haiku', 'horizon'].contains(host_machine.system())
     # No vulkan driver supports windows or macOS currently
     _vulkan_drivers = []
   else
@@ -285,6 +287,8 @@ if _platforms.contains('auto')
     _platforms = ['haiku']
   elif host_machine.system() == 'windows'
     _platforms = ['windows']
+  elif ['horizon'].contains(host_machine.system())
+    _platforms = ['switch']
   else
     error('Unknown OS @0@. Please pass -Dplatforms to set platforms. Patches gladly accepted to fix this.'.format(
           host_machine.system()))
@@ -296,6 +300,7 @@ with_platform_x11 = _platforms.contains('x11')
 with_platform_wayland = _platforms.contains('wayland')
 with_platform_drm = _platforms.contains('drm')
 with_platform_haiku = _platforms.contains('haiku')
+with_platform_switch = _platforms.contains('switch')
 with_platform_surfaceless = _platforms.contains('surfaceless')
 with_platform_windows = _platforms.contains('windows')
 
@@ -320,7 +325,7 @@ with_glx = get_option('glx')
 if with_glx == 'auto'
   if with_dri
     with_glx = 'dri'
-  elif with_platform_haiku
+  elif with_platform_haiku or with_platform_switch
     with_glx = 'disabled'
   elif host_machine.system() == 'windows'
     with_glx = 'disabled'
@@ -363,11 +368,11 @@ _egl = get_option('egl')
 if _egl == 'auto'
   with_egl = (
     not ['darwin', 'windows'].contains(host_machine.system()) and
-    with_dri and with_shared_glapi and with_platforms
+    (with_dri or with_platform_switch) and with_shared_glapi and with_platforms
   )
 elif _egl == 'true'
-  if not with_dri
-    error('EGL requires dri')
+  if not (with_dri or with_platform_switch)
+    error('EGL requires dri or -Dplatforms=switch')
   elif not with_shared_glapi
     error('EGL requires shared-glapi')
   elif not with_platforms
@@ -797,6 +802,9 @@ endif
 if with_platform_haiku
   pre_args += '-DHAVE_HAIKU_PLATFORM'
 endif
+if with_platform_switch
+  pre_args += '-DHAVE_SWITCH_PLATFORM'
+endif
 
 if meson.version().version_compare('>=0.50')
   prog_python = import('python').find_installation('python3')
@@ -831,7 +839,7 @@ endif
 with_shader_cache = false
 _shader_cache = get_option('shader-cache')
 if _shader_cache != 'false'
-  if host_machine.system() == 'windows'
+  if ['windows','horizon'].contains(host_machine.system())
     if _shader_cache == 'true'
       error('Shader Cache does not currently work on Windows')
     endif
@@ -893,7 +901,7 @@ if cc.compiles('__uint128_t foo(void) { return 0; }',
 endif
 
 # TODO: this is very incomplete
-if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd'].contains(host_machine.system())
+if ['linux', 'cygwin', 'gnu', 'freebsd', 'gnu/kfreebsd', 'horizon'].contains(host_machine.system())
   pre_args += '-D_GNU_SOURCE'
 elif host_machine.system() == 'sunos'
   pre_args += '-D__EXTENSIONS__'
@@ -916,6 +924,10 @@ elif host_machine.system() == 'windows'
   else
     pre_args += ['-D__MSVCRT_VERSION__=0x0700']
   endif
+endif
+
+if ['horizon'].contains(host_machine.system())
+  pre_args += '-D_ISOC11_SOURCE'
 endif
 
 # Check for generic C arguments
@@ -1244,7 +1256,7 @@ ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
 # check for dl support
 dep_dl = null_dep
 if not cc.has_function('dlopen')
-  dep_dl = cc.find_library('dl', required : host_machine.system() != 'windows')
+  dep_dl = cc.find_library('dl', required : not ['windows','horizon'].contains(host_machine.system()))
 endif
 if cc.has_function('dladdr', dependencies : dep_dl)
   # This is really only required for megadrivers
@@ -1266,42 +1278,50 @@ else
   dep_clock = cc.find_library('rt')
 endif
 
-# TODO: some of these may be conditional
-dep_zlib = dependency('zlib', version : '>= 1.2.3', fallback : ['zlib', 'zlib_dep'])
-pre_args += '-DHAVE_ZLIB'
+if host_machine.system() != 'horizon'
+  # TODO: some of these may be conditional
+  dep_zlib = dependency('zlib', version : '>= 1.2.3', fallback : ['zlib', 'zlib_dep'])
+  pre_args += '-DHAVE_ZLIB'
 
-_zstd = get_option('zstd')
-if _zstd != 'false'
-  dep_zstd = dependency('libzstd', required : _zstd == 'true')
-  if dep_zstd.found()
-    pre_args += '-DHAVE_ZSTD'
+  _zstd = get_option('zstd')
+  if _zstd != 'false'
+    dep_zstd = dependency('libzstd', required : _zstd == 'true')
+    if dep_zstd.found()
+      pre_args += '-DHAVE_ZSTD'
+    endif
+  else
+    dep_zstd = null_dep
+  endif
+
+  dep_thread = dependency('threads')
+  if dep_thread.found() and host_machine.system() != 'windows'
+    pre_args += '-DHAVE_PTHREAD'
+    if cc.has_function(
+        'pthread_setaffinity_np',
+        dependencies : dep_thread,
+        prefix : '#include <pthread.h>',
+        args : '-D_GNU_SOURCE')
+      pre_args += '-DHAVE_PTHREAD_SETAFFINITY'
+    endif
+    if cc.has_function(
+        'pthread_setaffinity_np',
+        dependencies : dep_thread,
+        prefix : '#include <pthread_np.h>')
+      pre_args += '-DPTHREAD_SETAFFINITY_IN_NP_HEADER'
+    endif
+  endif
+  if host_machine.system() != 'windows'
+    dep_expat = dependency('expat', fallback : ['expat', 'expat_dep'])
+  else
+    dep_expat = null_dep
   endif
 else
+  dep_zlib = null_dep
   dep_zstd = null_dep
-endif
-
-dep_thread = dependency('threads')
-if dep_thread.found() and host_machine.system() != 'windows'
-  pre_args += '-DHAVE_PTHREAD'
-  if cc.has_function(
-      'pthread_setaffinity_np',
-      dependencies : dep_thread,
-      prefix : '#include <pthread.h>',
-      args : '-D_GNU_SOURCE')
-    pre_args += '-DHAVE_PTHREAD_SETAFFINITY'
-  endif
-  if cc.has_function(
-      'pthread_setaffinity_np',
-      dependencies : dep_thread,
-      prefix : '#include <pthread_np.h>')
-    pre_args += '-DPTHREAD_SETAFFINITY_IN_NP_HEADER'
-  endif
-endif
-if host_machine.system() != 'windows'
-  dep_expat = dependency('expat', fallback : ['expat', 'expat_dep'])
-else
+  dep_thread = null_dep
   dep_expat = null_dep
 endif
+
 # this only exists on linux so either this is linux and it will be found, or
 # it's not linux and wont
 dep_m = cc.find_library('m', required : false)
@@ -1413,7 +1433,7 @@ endif
 
 dep_llvm = null_dep
 with_llvm = false
-if _llvm != 'false'
+if _llvm != 'false' and not ['horizon'].contains(host_machine.system())
   dep_llvm = dependency(
     'llvm',
     version : _llvm_version,
