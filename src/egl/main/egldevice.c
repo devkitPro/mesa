@@ -25,6 +25,7 @@
  *
  **************************************************************************/
 
+#include <stdlib.h>
 #ifdef HAVE_LIBDRM
 #include <xf86drm.h>
 #endif
