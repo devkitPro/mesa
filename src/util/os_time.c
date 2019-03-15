@@ -148,9 +148,7 @@ os_wait_until_zero(volatile int *var, uint64_t timeout)
 
    if (timeout == OS_TIMEOUT_INFINITE) {
       while (p_atomic_read(var)) {
-#if defined(PIPE_OS_UNIX)
-         sched_yield();
-#endif
+         thrd_yield();
       }
       return true;
    }
@@ -162,9 +160,7 @@ os_wait_until_zero(volatile int *var, uint64_t timeout)
          if (os_time_timeout(start_time, end_time, os_time_get_nano()))
             return false;
 
-#if defined(PIPE_OS_UNIX)
-         sched_yield();
-#endif
+         thrd_yield();
       }
       return true;
    }
@@ -184,9 +180,7 @@ os_wait_until_zero_abs_timeout(volatile int *var, int64_t timeout)
       if (os_time_get_nano() >= timeout)
          return false;
 
-#if defined(PIPE_OS_UNIX)
-      sched_yield();
-#endif
+      thrd_yield();
    }
    return true;
 }
