@@ -90,17 +90,11 @@ nouveau_screen_fence_finish(struct pipe_screen *screen,
 struct nouveau_bo *
 nouveau_screen_bo_from_handle(struct pipe_screen *pscreen,
                               struct winsys_handle *whandle,
-                              unsigned *out_stride)
+                              unsigned *out_stride, unsigned *out_offset)
 {
    struct nouveau_device *dev = nouveau_screen(pscreen)->device;
    struct nouveau_bo *bo = 0;
    int ret;
-
-   if (whandle->offset != 0) {
-      debug_printf("%s: attempt to import unsupported winsys offset %d\n",
-                   __FUNCTION__, whandle->offset);
-      return NULL;
-   }
 
    if (whandle->type != WINSYS_HANDLE_TYPE_SHARED &&
        whandle->type != WINSYS_HANDLE_TYPE_FD) {
@@ -121,6 +115,7 @@ nouveau_screen_bo_from_handle(struct pipe_screen *pscreen,
    }
 
    *out_stride = whandle->stride;
+   *out_offset = whandle->offset;
    return bo;
 }
 
@@ -129,9 +124,11 @@ bool
 nouveau_screen_bo_get_handle(struct pipe_screen *pscreen,
                              struct nouveau_bo *bo,
                              unsigned stride,
+                             unsigned offset,
                              struct winsys_handle *whandle)
 {
    whandle->stride = stride;
+   whandle->offset = offset;
 
    if (whandle->type == WINSYS_HANDLE_TYPE_SHARED) {
       return nouveau_bo_name_get(bo, &whandle->handle) == 0;
@@ -212,17 +209,23 @@ nouveau_screen_init(struct nouveau_screen *screen, struct nouveau_device *dev)
 
    ret = nouveau_object_new(&dev->object, 0, NOUVEAU_FIFO_CHANNEL_CLASS,
                             data, size, &screen->channel);
-   if (ret)
+   if (ret) {
+      debug_printf("nouveau_object_new: failed with %d\n", ret);
       return ret;
+   }
 
    ret = nouveau_client_new(screen->device, &screen->client);
-   if (ret)
+   if (ret) {
+      debug_printf("nouveau_client_new: failed with %d\n", ret);
       return ret;
+   }
    ret = nouveau_pushbuf_new(screen->client, screen->channel,
                              4, 512 * 1024, 1,
                              &screen->pushbuf);
-   if (ret)
+   if (ret) {
+      debug_printf("nouveau_pushbuf_new: failed with %d\n", ret);
       return ret;
+   }
 
    /* getting CPU time first appears to be more accurate */
    screen->cpu_gpu_time_delta = os_time_get();
