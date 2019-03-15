@@ -382,7 +382,7 @@ EGLBoolean
 _eglCheckResource(void *res, _EGLResourceType type, _EGLDisplay *disp)
 {
    _EGLResource *list = disp->ResourceLists[type];
-   
+
    if (!res)
       return EGL_FALSE;
 
