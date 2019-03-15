@@ -4243,7 +4243,7 @@ glsl_to_tgsi_visitor::canonicalize_gather_offset(st_src_reg offset)
 
    return offset;
 }
- 
+
 bool
 glsl_to_tgsi_visitor::handle_bound_deref(ir_dereference *ir)
 {

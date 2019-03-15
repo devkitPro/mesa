@@ -20,7 +20,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <xf86drm.h>
 #include <nouveau_drm.h>
 #include <nvif/class.h>
 #include "util/format/u_format.h"
@@ -440,6 +439,7 @@ nvc0_screen_get_shader_param(struct pipe_screen *pscreen,
    }
 
    switch (param) {
+#ifndef __SWITCH__
    case PIPE_SHADER_CAP_PREFERRED_IR:
       return screen->prefer_nir ? PIPE_SHADER_IR_NIR : PIPE_SHADER_IR_TGSI;
    case PIPE_SHADER_CAP_SUPPORTED_IRS: {
@@ -449,6 +449,12 @@ nvc0_screen_get_shader_param(struct pipe_screen *pscreen,
          irs |= 1 << PIPE_SHADER_IR_NIR_SERIALIZED;
       return irs;
    }
+#else
+   case PIPE_SHADER_CAP_PREFERRED_IR:
+      return PIPE_SHADER_IR_TGSI;
+   case PIPE_SHADER_CAP_SUPPORTED_IRS:
+      return 1 << PIPE_SHADER_IR_TGSI;
+#endif
    case PIPE_SHADER_CAP_MAX_INSTRUCTIONS:
    case PIPE_SHADER_CAP_MAX_ALU_INSTRUCTIONS:
    case PIPE_SHADER_CAP_MAX_TEX_INSTRUCTIONS:
@@ -939,6 +945,8 @@ nvc0_screen_bind_cb_3d(struct nvc0_screen *screen, bool *can_serialize,
    IMMED_NVC0(push, NVC0_3D(CB_BIND(stage)), (index << 4) | (size >= 0));
 }
 
+#ifndef __SWITCH__
+
 static const nir_shader_compiler_options nir_options = {
    .lower_fdiv = false,
    .lower_ffma = false,
@@ -1010,6 +1018,8 @@ nvc0_screen_get_compiler_options(struct pipe_screen *pscreen,
    return NULL;
 }
 
+#endif
+
 #define FAIL_SCREEN_INIT(str, err)                    \
    do {                                               \
       NOUVEAU_ERR(str, err);                          \
@@ -1052,6 +1062,7 @@ nvc0_screen_create(struct nouveau_device *dev)
    ret = nouveau_screen_init(&screen->base, dev);
    if (ret)
       FAIL_SCREEN_INIT("Base screen init failed: %d\n", ret);
+
    chan = screen->base.channel;
    push = screen->base.pushbuf;
    push->user_priv = screen;
@@ -1084,8 +1095,10 @@ nvc0_screen_create(struct nouveau_device *dev)
    pscreen->get_sample_pixel_grid = nvc0_screen_get_sample_pixel_grid;
    pscreen->get_driver_query_info = nvc0_screen_get_driver_query_info;
    pscreen->get_driver_query_group_info = nvc0_screen_get_driver_query_group_info;
+#ifndef __SWITCH__
    /* nir stuff */
    pscreen->get_compiler_options = nvc0_screen_get_compiler_options;
+#endif
 
    nvc0_screen_init_resource_functions(pscreen);
 
@@ -1103,8 +1116,7 @@ nvc0_screen_create(struct nouveau_device *dev)
    screen->fence.map = screen->fence.bo->map;
    screen->base.fence.emit = nvc0_screen_fence_emit;
    screen->base.fence.update = nvc0_screen_fence_update;
-
-
+#if 0 // TODO: Support queries
    ret = nouveau_object_new(chan, (dev->chipset < 0xe0) ? 0x1f906e : 0x906e,
                             NVIF_CLASS_SW_GF100, NULL, 0, &screen->nvsw);
    if (ret)
@@ -1112,7 +1124,7 @@ nvc0_screen_create(struct nouveau_device *dev)
 
    BEGIN_NVC0(push, SUBC_SW(NV01_SUBCHAN_OBJECT), 1);
    PUSH_DATA (push, screen->nvsw->handle);
-
+#endif
    switch (dev->chipset & ~0xf) {
    case 0x130:
    case 0x120:

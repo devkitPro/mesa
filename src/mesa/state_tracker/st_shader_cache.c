@@ -72,6 +72,8 @@ write_tgsi_to_cache(struct blob *blob, const struct tgsi_token *tokens,
    copy_blob_to_driver_cache_blob(blob, prog);
 }
 
+#ifndef __SWITCH__
+
 static void
 write_nir_to_cache(struct blob *blob, struct gl_program *prog)
 {
@@ -84,6 +86,8 @@ write_nir_to_cache(struct blob *blob, struct gl_program *prog)
 
    copy_blob_to_driver_cache_blob(blob, prog);
 }
+
+#endif
 
 static void
 st_serialise_ir_program(struct gl_context *ctx, struct gl_program *prog,
@@ -113,9 +117,11 @@ st_serialise_ir_program(struct gl_context *ctx, struct gl_program *prog,
        prog->info.stage == MESA_SHADER_GEOMETRY)
       write_stream_out_to_cache(&blob, &stp->state);
 
+#ifndef __SWITCH__
    if (nir)
       write_nir_to_cache(&blob, prog);
    else
+#endif
       write_tgsi_to_cache(&blob, stp->state.tokens, prog);
 
    blob_finish(&blob);
@@ -207,6 +213,7 @@ st_deserialise_ir_program(struct gl_context *ctx,
       read_stream_out_from_cache(&blob_reader, &stp->state);
 
    if (nir) {
+#ifndef __SWITCH__
       assert(prog->nir == NULL);
       assert(stp->serialized_nir == NULL);
 
@@ -215,6 +222,7 @@ st_deserialise_ir_program(struct gl_context *ctx,
       stp->serialized_nir = malloc(stp->serialized_nir_size);
       blob_copy_bytes(&blob_reader, stp->serialized_nir, stp->serialized_nir_size);
       stp->shader_program = shProg;
+#endif
    } else {
       read_tgsi_from_cache(&blob_reader, &stp->state.tokens);
    }
@@ -292,6 +300,8 @@ st_deserialise_tgsi_program(struct gl_context *ctx,
    st_deserialise_ir_program(ctx, shProg, prog, false);
 }
 
+#ifndef __SWITCH__
+
 void
 st_serialise_nir_program(struct gl_context *ctx, struct gl_program *prog)
 {
@@ -313,3 +323,5 @@ st_deserialise_nir_program(struct gl_context *ctx,
 {
    st_deserialise_ir_program(ctx, shProg, prog, true);
 }
+
+#endif

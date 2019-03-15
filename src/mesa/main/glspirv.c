@@ -325,6 +325,7 @@ _mesa_SpecializeShaderARB(GLuint shader,
       return;
    }
 
+#ifndef __SWITCH__
    sh = _mesa_lookup_shader_err(ctx, shader, "glSpecializeShaderARB");
    if (!sh)
       return;
@@ -417,4 +418,5 @@ _mesa_SpecializeShaderARB(GLuint shader,
 
  end:
    free(spec_entries);
+#endif
 }

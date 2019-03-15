@@ -28,6 +28,10 @@
 #define DETECT_OS_ANDROID 1
 #endif
 
+#if defined(__SWITCH__)
+#define DETECT_OS_SWITCH 1
+#endif
+
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #define DETECT_OS_FREEBSD 1
 #define DETECT_OS_BSD 1
