@@ -119,73 +119,6 @@ switch_framebuffer(struct st_framebuffer_iface *stfbi)
 }
 
 //-----------------------------------------------------------------------------
-// Default window, used to shim users of the old libnx gfx API.
-// This section is scheduled to be removed in the future.
-//-----------------------------------------------------------------------------
-
-static u32 s_defaultWidth = 1280, s_defaultHeight = 720;
-static ViDisplay s_viDisplay;
-static ViLayer s_viLayer;
-static NWindow s_defaultWin;
-
-static void switch_init_default_window(void)
-{
-    Result rc;
-    rc = viInitialize(ViServiceType_Default);
-    if (R_FAILED(rc)) fatalSimple(rc);
-    rc = viOpenDefaultDisplay(&s_viDisplay);
-    if (R_FAILED(rc)) fatalSimple(rc);
-    rc = viCreateLayer(&s_viDisplay, &s_viLayer);
-    if (R_FAILED(rc)) fatalSimple(rc);
-    rc = viSetLayerScalingMode(&s_viLayer, ViScalingMode_FitToLayer);
-    if (R_FAILED(rc)) fatalSimple(rc);
-    rc = nwindowCreateFromLayer(&s_defaultWin, &s_viLayer);
-    if (R_FAILED(rc)) fatalSimple(rc);
-    rc = nwindowSetDimensions(&s_defaultWin, s_defaultWidth, s_defaultHeight);
-    if (R_FAILED(rc)) fatalSimple(rc);
-}
-
-static void switch_destroy_default_window(void)
-{
-    nwindowClose(&s_defaultWin);
-    viCloseLayer(&s_viLayer);
-    viCloseDisplay(&s_viDisplay);
-    viExit();
-}
-
-// Shims for gfx functions
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
-void gfxInitResolution(u32 width, u32 height)
-{
-    s_defaultWidth = width;
-    s_defaultHeight = height;
-}
-
-void gfxInitResolutionDefault(void)
-{
-    gfxInitResolution(1920, 1080);
-}
-
-void gfxConfigureCrop(s32 left, s32 top, s32 right, s32 bottom)
-{
-    nwindowSetCrop(&s_defaultWin, left, top, right, bottom);
-}
-
-void gfxConfigureResolution(s32 width, s32 height)
-{
-    gfxConfigureCrop(0, 0, width, height);
-}
-
-void gfxConfigureTransform(u32 transform)
-{
-    nwindowSetTransform(&s_defaultWin, transform);
-}
-
-#pragma GCC diagnostic pop
-
-//-----------------------------------------------------------------------------
 // switch_framebuffer methods
 //-----------------------------------------------------------------------------
 
@@ -289,9 +222,6 @@ switch_egl_surface_cleanup(struct switch_egl_surface *surface)
         if (surface->cur_slot >= 0)
             nwindowCancelBuffer(surface->nw, surface->cur_slot, NULL);
         nwindowReleaseBuffers(surface->nw);
-
-        if (surface->nw == &s_defaultWin)
-            switch_destroy_default_window();
     }
 
     for (i = 0; i < NUM_BUFFERS; i ++)
@@ -336,15 +266,8 @@ switch_create_window_surface(_EGLDriver *drv, _EGLDisplay *dpy,
     surface->nw = (NWindow*)native_window;
     if (!nwindowIsValid(surface->nw))
     {
-        // We were passed an invalid native window, so attempt to use the default window shim
-        if (nwindowIsValid(&s_defaultWin))
-        {
-            // The default window is already used by another surface, so error out cleanly
-            _eglError(EGL_BAD_NATIVE_WINDOW, "switch_create_window_surface: not a valid native window reference");
-            goto cleanup;
-        }
-        switch_init_default_window();
-        surface->nw = &s_defaultWin;
+        _eglError(EGL_BAD_NATIVE_WINDOW, "switch_create_window_surface: not a valid native window reference");
+        goto cleanup;
     }
 
     // Allocate framebuffers and attach them to the native window
