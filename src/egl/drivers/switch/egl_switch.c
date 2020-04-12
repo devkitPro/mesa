@@ -156,7 +156,7 @@ switch_st_framebuffer_validate(struct st_context_iface *stctx, struct st_framebu
                 case ST_ATTACHMENT_BACK_LEFT:
                 {
                     Result rc = nwindowDequeueBuffer(surface->nw, &surface->cur_slot, NULL);
-                    if (R_FAILED(rc)) fatalSimple(rc);
+                    if (R_FAILED(rc)) fatalThrow(rc);
 
                     // Use the dequeued buffer as the back buffer
                     res = surface->buffers[surface->cur_slot];
@@ -304,7 +304,7 @@ switch_create_window_surface(_EGLDriver *drv, _EGLDisplay *dpy,
 
         // Attach the framebuffer to the native window
         Result rc = nwindowConfigureBuffer(surface->nw, i, &grbuf);
-        if (R_FAILED(rc)) fatalSimple(rc);
+        if (R_FAILED(rc)) fatalThrow(rc);
     }
 
     surface->stfbi = &fb->base;
@@ -705,7 +705,7 @@ switch_swap_buffers(_EGLDriver *drv, _EGLDisplay *dpy, _EGLSurface *surf)
 
     TRACE("Queuing buffer\n");
     Result rc = nwindowQueueBuffer(surface->nw, surface->cur_slot, &mf);
-    if (R_FAILED(rc)) fatalSimple(rc);
+    if (R_FAILED(rc)) fatalThrow(rc);
 
     // Update framebuffer state
     surface->cur_slot = -1;
