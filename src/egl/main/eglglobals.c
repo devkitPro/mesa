@@ -135,7 +135,11 @@ EGLBoolean
 _eglPointerIsDereferencable(void *p)
 {
    uintptr_t addr = (uintptr_t) p;
+#ifndef __SWITCH__
    const long page_size = getpagesize();
+#else
+   const long page_size = 0x1000;
+#endif
 #ifdef HAVE_MINCORE
    unsigned char valid = 0;
 

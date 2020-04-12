@@ -51,7 +51,7 @@
 #include "util/u_atomic.h"
 #include "util/u_box.h"
 #include "util/u_debug.h"
-#include "util/u_format.h"
+#include "util/format/u_format.h"
 #include "util/u_inlines.h"
 #include "util/u_memory.h"
 
@@ -129,14 +129,14 @@ static uint32_t drifb_ID = 0;
 // - glFlush
 // - glFinish
 // We don't support rendering to the front buffer, so our implementation is dummy.
-static boolean
+static bool
 switch_st_framebuffer_flush_front(struct st_context_iface *stctx, struct st_framebuffer_iface *stfbi, enum st_attachment_type statt)
 {
-    return TRUE;
+    return true;
 }
 
 // Called via st_framebuffer_validate.
-static boolean
+static bool
 switch_st_framebuffer_validate(struct st_context_iface *stctx, struct st_framebuffer_iface *stfbi,
                    const enum st_attachment_type *statts, unsigned count, struct pipe_resource **out)
 {
@@ -190,15 +190,15 @@ switch_st_framebuffer_validate(struct st_context_iface *stctx, struct st_framebu
         pipe_resource_reference(&out[i], res);
     }
 
-    return TRUE;
+    return true;
 }
 
 // Called via st_manager_flush_swapbuffers, which itself is only used during glFinish.
 // We don't actually want to swap the buffers during glFinish, so our implementation is dummy.
-static boolean
+static bool
 switch_st_framebuffer_flush_swapbuffers(struct st_context_iface *stctx, struct st_framebuffer_iface *stfbi)
 {
-    return TRUE;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ switch_create_window_surface(_EGLDriver *drv, _EGLDisplay *dpy,
         return NULL;
     }
 
-    if (!_eglInitSurface(&surface->base, dpy, EGL_WINDOW_BIT, conf, attrib_list))
+    if (!_eglInitSurface(&surface->base, dpy, EGL_WINDOW_BIT, conf, attrib_list, native_window))
         goto cleanup;
 
     fb = (struct switch_framebuffer *) calloc(1, sizeof (*fb));
@@ -688,7 +688,7 @@ switch_swap_buffers(_EGLDriver *drv, _EGLDisplay *dpy, _EGLSurface *surf)
     }
 
     TRACE("Flushing context\n");
-    context->stctx->flush(context->stctx, ST_FLUSH_END_OF_FRAME, NULL);
+    context->stctx->flush(context->stctx, ST_FLUSH_END_OF_FRAME, NULL, NULL, NULL);
 
     NvMultiFence mf = {0};
     NvFence fence;

@@ -284,9 +284,13 @@ get_drawpix_z_stencil_program(struct st_context *st,
       return st->drawpix.zs_shaders[shaderIndex];
    }
 
+#ifndef __SWITCH__
    enum pipe_shader_ir preferred_ir =
       pscreen->get_shader_param(pscreen, PIPE_SHADER_FRAGMENT,
                                 PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
+#endif
 
    if (preferred_ir == PIPE_SHADER_IR_NIR)
       cso = make_drawpix_z_stencil_program_nir(st, write_depth, write_stencil);
@@ -312,9 +316,13 @@ st_make_passthrough_vertex_shader(struct st_context *st)
    if (st->passthrough_vs)
       return;
 
+#ifndef __SWITCH__
    enum pipe_shader_ir preferred_ir =
       screen->get_shader_param(screen, PIPE_SHADER_VERTEX,
                                PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
+#endif
 
    if (preferred_ir == PIPE_SHADER_IR_NIR) {
       unsigned inputs[] =
