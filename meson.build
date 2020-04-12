@@ -183,7 +183,7 @@ if gallium_drivers.contains('auto')
             host_machine.cpu_family()))
     endif
   elif ['horizon'].contains(host_machine.system())
-    _drivers = ['nouveau']
+    gallium_drivers = ['nouveau']
   elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
     gallium_drivers = ['swrast']
   else
@@ -1339,7 +1339,7 @@ _drm_amdgpu_ver = '2.4.100'
 _drm_radeon_ver = '2.4.71'
 _drm_nouveau_ver = '2.4.66'
 _drm_intel_ver = '2.4.75'
-_drm_ver = '2.4.81'
+_drm_ver = '2.4.75'
 
 _libdrm_checks = [
   ['intel', with_dri_i915 or with_gallium_i915],

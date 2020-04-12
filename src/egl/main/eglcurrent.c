@@ -70,7 +70,7 @@ static inline _EGLThreadInfo *_eglGetTSD(void)
 
 static inline void _eglFiniTSD(void)
 {
-#ifndef GLX_USE_TLS
+#ifndef USE_ELF_TLS
    mtx_lock(&_egl_TSDMutex);
    if (_egl_TSDInitialized) {
       _EGLThreadInfo *t = _eglGetTSD();
@@ -85,7 +85,7 @@ static inline void _eglFiniTSD(void)
 
 static inline EGLBoolean _eglInitTSD()
 {
-#ifndef GLX_USE_TLS
+#ifndef USE_ELF_TLS
    if (!_egl_TSDInitialized) {
       mtx_lock(&_egl_TSDMutex);
 

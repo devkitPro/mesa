@@ -1,9 +1,9 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2007 VMware, Inc.
  * All Rights Reserved.
  * Copyright 2009 VMware, Inc.  All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -11,11 +11,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -23,7 +23,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  **************************************************************************/
 
  /*
@@ -110,9 +110,13 @@ static inline void
 set_fragment_shader(struct st_context *st)
 {
    struct pipe_screen *pscreen = st->pipe->screen;
+#ifndef __SWITCH__
    bool use_nir = PIPE_SHADER_IR_NIR ==
       pscreen->get_shader_param(pscreen, PIPE_SHADER_VERTEX,
                                 PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const bool use_nir = false;
+#endif
 
    if (!st->clear.fs) {
       if (use_nir) {
@@ -164,9 +168,13 @@ static inline void
 set_vertex_shader(struct st_context *st)
 {
    struct pipe_screen *pscreen = st->pipe->screen;
+#ifndef __SWITCH__
    bool use_nir = PIPE_SHADER_IR_NIR ==
       pscreen->get_shader_param(pscreen, PIPE_SHADER_VERTEX,
                                 PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const bool use_nir = false;
+#endif
 
    /* vertex shader - still required to provide the linkage between
     * fragment shader input semantics and vertex_element/buffers.
@@ -198,9 +206,13 @@ set_vertex_shader_layered(struct st_context *st)
 {
    struct pipe_context *pipe = st->pipe;
    struct pipe_screen *pscreen = pipe->screen;
+#ifndef __SWITCH__
    bool use_nir = PIPE_SHADER_IR_NIR ==
       pscreen->get_shader_param(pscreen, PIPE_SHADER_VERTEX,
                                 PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const bool use_nir = false;
+#endif
 
    if (!pipe->screen->get_param(pipe->screen, PIPE_CAP_TGSI_INSTANCEID)) {
       assert(!"Got layered clear, but VS instancing is unsupported");

@@ -50,7 +50,7 @@
 #  error Unsupported OS
 #endif
 
-#if defined(PIPE_OS_SWITCH)
+#if defined(DETECT_OS_SWITCH)
 #  include <switch/kernel/svc.h>
 #endif
 
@@ -113,7 +113,7 @@ os_time_sleep(int64_t usecs)
    if (dwMilliseconds) {
       Sleep(dwMilliseconds);
    }
-#elif defined(PIPE_OS_SWITCH)
+#elif DETECT_OS_SWITCH
    svcSleepThread((u64)usecs * 1000);
 #else
 #  error Unsupported OS

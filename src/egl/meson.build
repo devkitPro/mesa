@@ -142,10 +142,10 @@ elif with_platform_switch
   incs_for_egl += [inc_gallium, inc_gallium_aux, inc_gallium_winsys, inc_mesa]
   files_egl += files('drivers/switch/egl_switch.c')
   objs_for_egl += [
+    libmesa_common.extract_all_objects(),
     libmesa_gallium.extract_all_objects(),
     libglsl.extract_all_objects(),
     libglcpp.extract_all_objects(),
-    libmesa_util.extract_all_objects(),
     libcompiler.extract_all_objects(),
     libgallium.extract_all_objects(),
     libgalliumvl_stub.extract_all_objects(),

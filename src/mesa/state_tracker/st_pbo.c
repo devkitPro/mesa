@@ -293,6 +293,7 @@ void *
 st_pbo_create_vs(struct st_context *st)
 {
    struct pipe_screen *pscreen = st->pipe->screen;
+#ifndef __SWITCH__
    bool use_nir = PIPE_SHADER_IR_NIR ==
       pscreen->get_shader_param(pscreen, PIPE_SHADER_VERTEX,
                                 PIPE_SHADER_CAP_PREFERRED_IR);
@@ -306,6 +307,7 @@ st_pbo_create_vs(struct st_context *st)
                                             st->pbo.layers ? 2 : 1,
                                             inputs, outputs, NULL, (1 << 1));
    }
+#endif
 
    struct ureg_program *ureg;
    struct ureg_src in_pos;
@@ -726,6 +728,7 @@ create_fs(struct st_context *st, bool download,
           enum pipe_texture_target target,
           enum st_pbo_conversion conversion)
 {
+#ifndef __SWITCH__
    struct pipe_screen *pscreen = st->pipe->screen;
    bool use_nir = PIPE_SHADER_IR_NIR ==
       pscreen->get_shader_param(pscreen, PIPE_SHADER_VERTEX,
@@ -733,6 +736,7 @@ create_fs(struct st_context *st, bool download,
 
    if (use_nir)
       return create_fs_nir(st, download, target, conversion);
+#endif
 
    return create_fs_tgsi(st, download, target, conversion);
 }

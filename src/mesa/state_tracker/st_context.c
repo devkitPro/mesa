@@ -760,9 +760,13 @@ st_create_context_priv(struct gl_context *ctx, struct pipe_context *pipe,
 
    ctx->Const.ShaderCompilerOptions[MESA_SHADER_VERTEX].PositionAlwaysInvariant = options->vs_position_always_invariant;
 
+#ifndef __SWITCH__
    enum pipe_shader_ir preferred_ir = (enum pipe_shader_ir)
       screen->get_shader_param(screen, PIPE_SHADER_VERTEX,
                                PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
+#endif
    ctx->Const.UseNIRGLSLLinker = preferred_ir == PIPE_SHADER_IR_NIR;
 
    if (ctx->Const.GLSLVersion < 400) {
@@ -930,9 +934,13 @@ st_init_driver_functions(struct pipe_screen *screen,
    /* GL_ARB_get_program_binary */
    functions->GetProgramBinaryDriverSHA1 = st_get_program_binary_driver_sha1;
 
+#ifndef __SWITCH__
    enum pipe_shader_ir preferred_ir = (enum pipe_shader_ir)
       screen->get_shader_param(screen, PIPE_SHADER_VERTEX,
                                PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
+#endif
    if (preferred_ir == PIPE_SHADER_IR_NIR) {
       functions->ShaderCacheSerializeDriverBlob =  st_serialise_nir_program;
       functions->ProgramBinarySerializeDriverBlob =

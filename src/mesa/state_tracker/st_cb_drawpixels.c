@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2007 VMware, Inc.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,11 +10,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -22,7 +22,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  **************************************************************************/
 
  /*
@@ -284,9 +284,13 @@ get_drawpix_z_stencil_program(struct st_context *st,
       return st->drawpix.zs_shaders[shaderIndex];
    }
 
+#ifndef __SWITCH__
    enum pipe_shader_ir preferred_ir =
       pscreen->get_shader_param(pscreen, PIPE_SHADER_FRAGMENT,
                                 PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
+#endif
 
    if (preferred_ir == PIPE_SHADER_IR_NIR)
       cso = make_drawpix_z_stencil_program_nir(st, write_depth, write_stencil);
@@ -312,9 +316,13 @@ st_make_passthrough_vertex_shader(struct st_context *st)
    if (st->passthrough_vs)
       return;
 
+#ifndef __SWITCH__
    enum pipe_shader_ir preferred_ir =
       screen->get_shader_param(screen, PIPE_SHADER_VERTEX,
                                PIPE_SHADER_CAP_PREFERRED_IR);
+#else
+   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
+#endif
 
    if (preferred_ir == PIPE_SHADER_IR_NIR) {
       unsigned inputs[] =
@@ -977,7 +985,7 @@ draw_stencil_pixels(struct gl_context *ctx, GLint x, GLint y,
       y = ctx->DrawBuffer->Height - y - height;
    }
 
-   if (format == GL_STENCIL_INDEX && 
+   if (format == GL_STENCIL_INDEX &&
        _mesa_is_format_packed_depth_stencil(strb->Base.Format)) {
       /* writing stencil to a combined depth+stencil buffer */
       usage = PIPE_TRANSFER_READ_WRITE;
