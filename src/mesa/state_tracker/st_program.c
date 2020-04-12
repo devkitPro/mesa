@@ -347,6 +347,8 @@ st_release_program(struct st_context *st, struct st_program **p)
    st_reference_prog(st, p, NULL);
 }
 
+#ifndef __SWITCH__
+
 void
 st_finalize_nir_before_variants(struct nir_shader *nir)
 {
