@@ -24,10 +24,14 @@
 
 namespace nv50_ir {
 
+#ifndef __SWITCH__
+
 Target *getTargetNVC0(unsigned int chipset)
 {
    return new TargetNVC0(chipset);
 }
+
+#endif
 
 TargetNVC0::TargetNVC0(unsigned int card) :
    Target(card < 0x110, false, card >= 0xe4)
