@@ -994,8 +994,10 @@ st_api_create_context(struct st_api *stapi, struct st_manager *smapi,
    st->iface.teximage = st_context_teximage;
    st->iface.copy = st_context_copy;
    st->iface.share = st_context_share;
+#ifndef __SWITCH__
    st->iface.start_thread = st_start_thread;
    st->iface.thread_finish = st_thread_finish;
+#endif
    st->iface.st_context_private = (void *) smapi;
    st->iface.cso_context = st->cso_context;
    st->iface.pipe = st->pipe;
