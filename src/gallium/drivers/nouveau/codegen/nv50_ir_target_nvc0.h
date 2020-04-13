@@ -40,7 +40,9 @@ public:
 
    void initProps(const struct opProperties *props, int size);
 
+#ifndef __SWITCH__
    virtual CodeEmitter *getCodeEmitter(Program::Type);
+#endif
 
    CodeEmitter *createCodeEmitterNVC0(Program::Type);
    CodeEmitter *createCodeEmitterGK110(Program::Type);

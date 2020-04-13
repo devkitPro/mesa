@@ -24,6 +24,8 @@
 
 namespace nv50_ir {
 
+#ifndef __SWITCH__
+
 // Argh, all these assertions ...
 
 class CodeEmitterNVC0 : public CodeEmitter
@@ -3534,5 +3536,7 @@ TargetNVC0::getCodeEmitter(Program::Type type)
       return createCodeEmitterGK110(type);
    return createCodeEmitterNVC0(type);
 }
+
+#endif
 
 } // namespace nv50_ir
