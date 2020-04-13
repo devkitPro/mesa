@@ -1070,8 +1070,10 @@ st_destroy_context(struct st_context *st)
     */
    _mesa_make_current(ctx, NULL, NULL);
 
+#ifndef __SWITCH__
    /* This must be called first so that glthread has a chance to finish */
    _mesa_glthread_destroy(ctx);
+#endif
 
    _mesa_HashWalk(ctx->Shared->TexObjects, destroy_tex_sampler_cb, st);
 
