@@ -1029,6 +1029,13 @@ else
     cpp_vis_args += '-fvisibility=hidden'
   endif
 
+  if host_machine.system() == 'horizon'
+    # Disable exceptions/rtti support on Switch in order to save on code size.
+    cpp_args += [
+      '-fno-exceptions',
+      '-fno-rtti',
+    ]
+  endif
 endif
 
 # set linker arguments
