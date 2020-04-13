@@ -27,6 +27,7 @@ extern "C" {
 static inline struct pipe_screen *
 debug_screen_wrap(struct pipe_screen *screen)
 {
+#ifdef DEBUG
    screen = ddebug_screen_create(screen);
    screen = rbug_screen_create(screen);
    screen = trace_screen_create(screen);
@@ -34,6 +35,7 @@ debug_screen_wrap(struct pipe_screen *screen)
 
    if (debug_get_bool_option("GALLIUM_TESTS", FALSE))
       util_run_tests(screen);
+#endif
 
    return screen;
 }
