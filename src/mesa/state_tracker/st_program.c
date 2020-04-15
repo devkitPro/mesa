@@ -225,8 +225,10 @@ delete_variant(struct st_context *st, struct st_variant *v, GLenum target)
    if (v->driver_shader) {
       if (target == GL_VERTEX_PROGRAM_ARB &&
           ((struct st_common_variant*)v)->key.is_draw_shader) {
+#ifndef __SWITCH__
          /* Draw shader. */
          draw_delete_vertex_shader(st->draw, v->driver_shader);
+#endif
       } else if (st->has_shareable_shaders || v->st == st) {
          /* The shader's context matches the calling context, or we
           * don't care.
@@ -804,9 +806,11 @@ st_create_vp_variant(struct st_context *st,
    if (ST_DEBUG & DEBUG_PRINT_IR)
       tgsi_dump(state.tokens, 0);
 
+#ifndef __SWITCH__
    if (key->is_draw_shader)
       vpv->base.driver_shader = draw_create_vertex_shader(st->draw, &state);
    else
+#endif
       vpv->base.driver_shader = pipe->create_vs_state(pipe, &state);
 
    if (state.tokens) {

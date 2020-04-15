@@ -347,6 +347,7 @@ st_init_draw_functions(struct dd_function_table *functions)
    functions->DrawIndirect = st_indirect_draw_vbo;
 }
 
+#ifndef __SWITCH__
 
 void
 st_destroy_draw(struct st_context *st)
@@ -379,6 +380,8 @@ st_get_draw_context(struct st_context *st)
 
    return st->draw;
 }
+
+#endif
 
 /**
  * Draw a quad with given position, texcoords and color.

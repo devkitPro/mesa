@@ -453,7 +453,9 @@ st_destroy_context_priv(struct st_context *st, bool destroy_pipe)
    uint i;
 
    st_destroy_atoms(st);
+#ifndef __SWITCH__
    st_destroy_draw(st);
+#endif
    st_destroy_clear(st);
    st_destroy_bitmap(st);
    st_destroy_drawpix(st);
@@ -905,14 +907,18 @@ st_init_driver_functions(struct pipe_screen *screen,
    st_init_bitmap_functions(functions);
    st_init_copy_image_functions(functions);
    st_init_drawpixels_functions(functions);
+#ifndef __SWITCH__
    st_init_rasterpos_functions(functions);
+#endif
 
    st_init_drawtex_functions(functions);
 
    st_init_eglimage_functions(functions);
 
    st_init_fbo_functions(functions);
+#ifndef __SWITCH__
    st_init_feedback_functions(functions);
+#endif
    st_init_memoryobject_functions(functions);
    st_init_msaa_functions(functions);
    st_init_perfmon_functions(functions);
