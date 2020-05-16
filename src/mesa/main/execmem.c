@@ -133,6 +133,7 @@ _mesa_exec_free(void *addr)
 
 
 #else
+#include <stdlib.h>
 
 /*
  * Just use regular memory.

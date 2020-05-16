@@ -34,6 +34,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <assert.h>
 #include "glheader.h"
 
 #include "c11/threads.h"
