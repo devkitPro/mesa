@@ -1031,9 +1031,12 @@ else
 
   if host_machine.system() == 'horizon'
     # Disable exceptions/rtti support on Switch in order to save on code size.
+    # Disable usage of __cxa_atexit since newlib only supports 32 atexit functions
+    # and mesa wants to register around 200 objects worth of global destructors.
     cpp_args += [
       '-fno-exceptions',
       '-fno-rtti',
+      '-fno-use-cxa-atexit',
     ]
   endif
 endif
@@ -1345,7 +1348,7 @@ _drm_amdgpu_ver = '2.4.100'
 _drm_radeon_ver = '2.4.71'
 _drm_nouveau_ver = '2.4.66'
 _drm_intel_ver = '2.4.75'
-_drm_ver = '2.4.75'
+_drm_ver = '2.4.81'
 
 _libdrm_checks = [
   ['intel', with_dri_i915 or with_gallium_i915],
